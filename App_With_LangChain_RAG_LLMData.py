@@ -45,7 +45,8 @@ while True:
         prompt = f"""
 You are a helpful assistant.
 
-Use the context below to answer the question.
+Prefer the provided context if relevant.
+If the context is insufficient, you may use general knowledge.
 
 Context:
 {context}
