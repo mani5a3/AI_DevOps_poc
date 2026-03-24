@@ -30,6 +30,7 @@ install dependencies using pip:
         pip install langchain langchain-community
         pip install -U langchain-ollama
         pip install  chromadb pypdf
+        pip install pyyaml
 
 ChromaDB: it stores embeddings and retrieves most similar data based on meaning
 pypdf: Library to read PDF files
