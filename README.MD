@@ -40,3 +40,10 @@ What LangChain does: User → Chain → Memory → LLM → Response
     Formats prompt internally
     Injects history into LLM
     Manages structure
+
+
+To start and stop ollama in your local system:
+    netstat -ano | findstr :11434
+    wmic process where "ProcessId=<PID>" get ParentProcessId
+    taskkill /F /PID <ParentPID> /T
+    Start-Process ollama -ArgumentList "serve"
