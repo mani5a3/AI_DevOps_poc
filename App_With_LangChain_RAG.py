@@ -1,3 +1,4 @@
+import re
 from langchain_ollama import ChatOllama, OllamaEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import CharacterTextSplitter
@@ -17,37 +18,36 @@ embeddings = OllamaEmbeddings(model="nomic-embed-text")
 # Store in vector DB
 vectorstore = Chroma.from_documents(docs, embeddings)
 
-# Initialize LLM
-llm = ChatOllama(model="gemma3:4b")
+# Initialize LLM with streaming enabled
+llm = ChatOllama(model="gemma3:4b", streaming=True)
 
 print("RAG Chatbot Ready (type 'exit' to quit)\n")
 
+def clean_text(token_text):
+    """
+    Clean Markdown artifacts like '*' or '**' in the middle of sentences
+    while preserving line-start bullets.
+    """
+    # Remove '**' and '*' that are not at the start of a line
+    token_text = re.sub(r'(?<!\n)\*\*?', '', token_text)
+    # Optional: collapse multiple spaces
+    token_text = re.sub(r'\s+', ' ', token_text)
+    return token_text
+
 while True:
     query = input("Ask: ")
-
     if query.lower() == "exit":
         break
 
     # Search top 3 matches
     results = vectorstore.similarity_search_with_score(query, k=3)
-
-    """ print("\n--- Retrieval Debug ---")
-
-    for doc, score in results:
-        print(f"\nScore: {score}")
-        print("Content:", doc.page_content) """
-
-    #  Pick best match
     best_doc, best_score = results[0]
+    print(f"\nBest Score: {best_score}")
 
-    print(f"\n Best Score: {best_score}") # vector closest match using cosine similarity
-
-    #  If not relevant enough
     if best_score > 1.2:
         print("\nNo relevant information found in documents.\n")
         continue
 
-    #  Use best context
     context = best_doc.page_content
 
     # Strict RAG prompt
@@ -66,7 +66,8 @@ Question:
 {query}
 """
 
-    # Generate response
-    response = llm.invoke(prompt)
-
-    print("\n Bot:", response.content, "\n")
+    # Stream the response and clean each token
+    print("\nBot:", end=" ", flush=True)
+    for token in llm.stream(prompt):
+        print(clean_text(token.content), end="", flush=True)
+    print("\n")
