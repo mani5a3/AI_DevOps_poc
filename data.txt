@@ -1,0 +1,24 @@
+Kubernetes is an open-source container orchestration platform used to automate deployment, scaling, and management of containerized applications.
+
+Docker is a containerization platform that allows developers to package applications and their dependencies into containers.
+
+Terraform is an infrastructure as code (IaC) tool used to provision and manage cloud resources using configuration files.
+
+Jenkins is a continuous integration and continuous delivery (CI/CD) tool used to automate building, testing, and deploying applications.
+
+Ansible is an automation tool used for configuration management, application deployment, and task automation.
+
+In Kubernetes, a Pod is the smallest deployable unit that represents a single instance of a running process in a cluster.
+
+kubectl is a command-line tool used to interact with Kubernetes clusters.
+
+To list all pods in Kubernetes, you can use the command: kubectl get pods.
+
+To check logs of a pod, you can use: kubectl logs <pod-name>.
+
+CI/CD pipelines automate the process of software delivery by integrating code changes, running tests, and deploying applications.
+
+who is founder of this bot mani
+The founder of this chatbot is Mani.
+This bot was created by Mani.
+Mani is the developer of this AI chatbot.

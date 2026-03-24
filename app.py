@@ -1,3 +1,5 @@
+# User → ConversationChain → Memory → LLM → response
+
 import requests
 import json
 

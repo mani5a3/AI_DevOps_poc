@@ -1,5 +1,4 @@
 Download ollama from browser and install it on your machine
-pip install requests
 ollama pull gemma3:4b
 ollama run gemma3:4b --> run a model
 ollama is engine or server that calls model gemma
@@ -20,8 +19,24 @@ system assistant using this Set tone / personality and if You want to control be
 
 with roles, Model behaves like real chat
 
+install dependencies using ollama: 
+            download llm model: ollama pull gemma3:4b
+                run llm model: ollama run gemma3:4b   
+    download embedding model : ollama pull nomic-embed-text
 
-using langchain install plugin using 
+install dependencies using pip:
+        pip install requests
+        pip install greenlet --only-binary :all:
+        pip install langchain langchain-community
+        pip install -U langchain-ollama
+        pip install  chromadb pypdf
 
- pip install greenlet --only-binary :all:
- pip install langchain langchain-community
+ChromaDB: it stores embeddings and retrieves most similar data based on meaning
+pypdf: Library to read PDF files
+
+
+What LangChain does: User → Chain → Memory → LLM → Response
+    Stores conversation automatically
+    Formats prompt internally
+    Injects history into LLM
+    Manages structure
