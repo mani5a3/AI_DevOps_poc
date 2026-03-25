@@ -1,3 +1,11 @@
+# | Tool         | Purpose                   |
+# | ------------ | ------------------------- |
+# | GetPodPhase  | Check if pod is Running   |
+# | GetPodStatus | Get detailed pod info     |
+# | FixImage     | Fix wrong container image |
+# | ApplyYAML    | Apply changes to cluster  |
+# | GetEvents    | Debug issues              |
+
 import subprocess
 import yaml
 import json

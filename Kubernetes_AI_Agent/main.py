@@ -1,3 +1,24 @@
+# it keeps checking and fixing the Kubernetes pod until it becomes healthy.
+# Iteration 1
+#    ↓
+# Check Phase
+#    ↓
+# If not Running:
+#    ↓
+# Get Status
+#    ↓
+# Send to Agent
+#    ↓
+# Agent decides fix
+#    ↓
+# Wait
+#    ↓
+# Iteration 2
+# Why no apply_yaml here?
+    # Your agent is expected to call:
+        # FixImage
+        # ApplyYAML
+
 import time
 from agent import create_agent
 from tools import get_pod_phase, get_pod_status, apply_yaml
@@ -30,7 +51,13 @@ for i in range(MAX_ITERATIONS):
     print(status)
 
     print("\n--- Agent Thinking ---\n")
-    agent.invoke({"input": f"Pod issue:\n{status}"})
+    # Here You send pod status to agent Agent analyzes it
+    # Agent decides:
+    #     Fix image?
+    #     Apply YAML?
+    #     Check events?
+
+    agent.invoke({"input": f"Pod issue:\n{status}"}) 
 
     # # Apply YAML only if pod is not Running
     # if phase != "Running":

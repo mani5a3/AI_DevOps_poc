@@ -1,3 +1,13 @@
+# Creates AI agent
+# Connects LLM + tools
+# Read input
+# Apply SYSTEM_PROMPT rules
+# Decide action
+# Call tool
+# Get result
+# Repeat if needed
+
+
 from langchain.agents import initialize_agent, AgentType
 from langchain_ollama import OllamaLLM
 from tools import tools
