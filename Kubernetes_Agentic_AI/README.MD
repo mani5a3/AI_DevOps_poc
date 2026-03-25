@@ -1,3 +1,8 @@
+AI Agent:
+    Uses LLM every iteration
+Agentic AI:
+    Uses LLM only when needed
+
 Agentic AI DevOps – Kubernetes Self-Healing
 
 An Agentic AI system that detects and fixes Kubernetes pod failures automatically using rule-based + LLM-driven decision making.
@@ -37,4 +42,9 @@ Rule-Based Logic (Primary):
         }
  
  LLM-Based Logic (Fallback):
-    Used when no rule matches:
+    Used when no rule matches
+
+Decision Strategy:
+    1. Try rule-based decision
+    2. If no match → use LLM
+    3. Return action to executor
