@@ -1,7 +1,0 @@
-YAML_FILE_PATH = "nginx-pod.yaml"
-
-# fallback correct images (simple mapping)
-IMAGE_MAP = {
-    "nginx": "nginx:latest",
-    "redis": "redis:7",
-}

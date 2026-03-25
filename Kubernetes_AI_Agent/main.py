@@ -19,6 +19,9 @@
         # FixImage
         # ApplyYAML
 
+# Provide tools + prompt → LLM handles everything
+
+
 import time
 import os
 from agent import create_agent
