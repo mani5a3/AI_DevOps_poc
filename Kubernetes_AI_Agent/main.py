@@ -20,8 +20,19 @@
         # ApplyYAML
 
 import time
+import os
 from agent import create_agent
 from tools import get_pod_phase, get_pod_status, apply_yaml
+from dotenv import load_dotenv
+from config import MAX_ITERATIONS,LABEL_SELECTOR,SLEEP_SECONDS
+
+load_dotenv()
+
+# # Get YAML_FILE_PATH from .env file
+YAML_FILE_PATH = os.getenv("YAML_FILE_PATH")
+
+# Get NAMESPACE from .env file
+NAMESPACE = os.getenv("NAMESPACE")
 
 # ---------------------------
 # Initialize Agent
@@ -31,8 +42,6 @@ agent = create_agent()
 # ---------------------------
 # Config
 # ---------------------------
-MAX_ITERATIONS = 10
-SLEEP_SECONDS = 3
 
 print("\n Starting AI DevOps Agent...\n")
 
@@ -57,7 +66,7 @@ for i in range(MAX_ITERATIONS):
     #     Apply YAML?
     #     Check events?
 
-    agent.invoke({"input": f"Pod issue:\n{status}"}) 
+    agent.invoke({"input": f"Pod issue in namespace {NAMESPACE}:\n{status}"})
 
     # # Apply YAML only if pod is not Running
     # if phase != "Running":

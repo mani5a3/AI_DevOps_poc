@@ -5,6 +5,7 @@ metadata:
     app: myapp
     tier: frontend
   name: manual-nginx-pod
+  namespace: dev
 spec:
   containers:
   - image: nginx:latest
