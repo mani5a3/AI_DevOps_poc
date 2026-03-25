@@ -84,7 +84,7 @@ def plan_action(status: str):
     rule_plan = rule_based_decision(status)
 
     if rule_plan:
-        print("⚡ Rule-based decision used")
+        print("Rule-based decision used")
         return rule_plan
 
     print("Using LLM decision")

@@ -25,7 +25,7 @@ def run_agent():
 
         print("\n Planning...")
         plan = plan_action(json.dumps(pod_json))
-        print("👉 Plan:", plan)
+        print("Plan:", plan)
 
         print("\n Executing...")
         result = execute(plan, POD_NAME)
