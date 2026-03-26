@@ -46,5 +46,5 @@ What LangChain does: User → Chain → Memory → LLM → Response
 To start and stop ollama in your local system:
     netstat -ano | findstr :11434
     wmic process where "ProcessId=<PID>" get ParentProcessId
-    taskkill /F /PID <ParentPID> /T
+    taskkill /F /T /PID <ParentPID>
     Start-Process ollama -ArgumentList "serve"
