@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels:
+    app: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api
+        image: busybox
+        command: ["/bin/sh", "-c", "echo $MISSING_ENV_VAR && sleep 60"]
+        ports:
+        - containerPort: 8080
+        env:
+        - name: MISSING_ENV_VAR
+          value: ""
+        - name: DATABASE_URL
+          value: "postgres://invalid:5432/db"
+        - name: API_PORT
+          value: "9999"
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "64Mi"
+            cpu: "100m"

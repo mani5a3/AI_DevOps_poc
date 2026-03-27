@@ -1,0 +1,40 @@
+kubernetes:
+  namespace: default
+  check_interval_seconds: 30
+  max_retries: 5
+  retry_delay_seconds: 10
+  timeout_seconds: 300
+
+agent:
+  dry_run: false
+  auto_fix_enabled: true
+  log_level: INFO
+
+fix_strategies:
+  image_pull_backoff:
+    action: update_image_tag
+    fallback_image: nginx:latest
+    max_retries: 3
+
+  crash_loop_backoff:
+    action: analyze_and_fix
+    increase_resources: true
+    check_logs: true
+
+  oom_killed:
+    action: increase_memory
+    memory_increase_factor: 2.0
+    max_memory_limit: 4Gi
+
+  evicted:
+    action: clear_and_redeploy
+    clear_node_pressure: false
+
+  pending:
+    action: adjust_scheduling
+    add_node_selector: false
+
+deployment:
+  deployment_dir: ./deployments
+  backup_dir: ./backups
+  wait_timeout_seconds: 120
