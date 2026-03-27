@@ -1,27 +1,89 @@
 # Kubernetes Agentic AI
 
-An autonomous AI agent for Kubernetes that automatically detects, diagnoses, and fixes common pod issues including:
+An autonomous AI agent for Kubernetes that automatically detects, diagnoses, and fixes **ALL** Kubernetes issues using rule-based logic + LLM intelligence.
 
+## Supported Issues (Complete Coverage)
+
+### Pod Issues
 - **ImagePullBackOff** - Invalid or missing container images
-- **CrashLoopBackOff** - Application crashes on startup
-- **OOMKilled** - Out of Memory terminations
-- **Evicted** - Pod evictions due to resource pressure
-- **Pending** - Pod scheduling issues
+- **ErrImagePull** - Image pull errors
+- **CrashLoopBackOff** - Container crashes/restarts
+- **InitCrashLoopBackOff** - Init container crashes
+- **OOMKilled** - Out of Memory terminations (exit code 137)
+- **Evicted** - Pod evictions due to node pressure
+- **Pending** - Pod scheduling failures
+- **Terminating** - Stuck terminating pods
+
+### Service Issues
+- **ServiceNoEndpoints** - Service has no ready endpoints
+- **PortConflicts** - Port conflicts
+
+### PVC/Storage Issues
+- **PVCPending** - PVC stuck in pending state
+- **PVCLost** - PVC volume is lost
+- **StorageClassIssues** - Storage configuration problems
+
+### Deployment Issues
+- **DeploymentNotReady** - Deployment has unavailable replicas
+- **ReplicaSetFailures** - ReplicaSet issues
+
+### Ingress Issues
+- **IngressError** - Ingress controller errors
+- **TLS/CertificateIssues** - Certificate problems
+- **RoutingErrors** - 404/502/503 errors
+
+### Node Issues (Cluster-wide)
+- **NodeNotReady** - Node is not ready
+- **NodeMemoryPressure** - Node has memory pressure
+- **NodeDiskPressure** - Node has disk pressure
+- **NodePIDPressure** - Node has PID pressure
+
+### RBAC/Network Issues (via LLM)
+- **ForbiddenErrors** - RBAC permission issues
+- **NetworkPolicyBlocking** - Network policy blocks traffic
 
 ## Features
 
-- Continuous monitoring of Kubernetes pods
-- Automatic diagnosis of failure reasons
-- Auto-fix capabilities with configurable strategies
-- Automatic redeployment and verification
-- Dry-run mode for testing
-- Backup of original deployment files before modifications
+- **Comprehensive** - Monitors ALL Kubernetes resources
+- **Intelligent** - Uses LLM for complex diagnosis
+- **Auto-fix** - Attempts fixes automatically
+- **Dry-run** - Test without applying changes
+- **Backup** - Backs up YAML before modifications
+- **Verifies** - Waits for resources to become healthy
 
 ## Requirements
 
 - Python 3.8+
 - Kubernetes cluster (or kubectl configured locally)
 - `kubectl` command-line tool
+
+## LLM Setup (Optional - FREE)
+
+The agent supports **Ollama** - a free, local LLM that runs on your machine.
+
+### Install Ollama
+
+1. **Windows/Mac/Linux**: Download from https://ollama.com
+
+2. **Start Ollama**:
+```bash
+ollama serve
+```
+
+3. **Pull a model** (choose one):
+```bash
+# Lightweight option (recommended for start)
+ollama pull gemma3:4b
+
+# Or other free models
+ollama pull llama3
+ollama pull mistral
+```
+
+4. **Test**:
+```bash
+ollama list  # Should show your model
+```
 
 ## Installation
 

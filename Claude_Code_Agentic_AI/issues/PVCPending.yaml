@@ -1,0 +1,12 @@
+# Issue: PVCPending - PVC stuck in pending
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-pending
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 999Ti  # Huge request that can't be fulfilled
+  storageClassName: non-existent-storage-class

@@ -1,0 +1,35 @@
+# Issue: Evicted - Pod evicted due to node pressure
+# Note: This will only trigger eviction under node pressure conditions
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: evicted
+  labels:
+    app: evicted
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: evicted
+  template:
+    metadata:
+      labels:
+        app: evicted
+    spec:
+      containers:
+      - name: app
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "100m"
+          limits:
+            memory: "2Gi"
+            cpu: "500m"
+      tolerations:
+      - key: "node.kubernetes.io/not-ready"
+        operator: "Exists"
+        effect: "NoSchedule"
+        tolerationSeconds: 1

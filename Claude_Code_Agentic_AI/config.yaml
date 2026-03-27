@@ -5,12 +5,21 @@ kubernetes:
   retry_delay_seconds: 10
   timeout_seconds: 300
 
+llm:
+  provider: ollama  # ollama, openai, anthropic
+  model: gemma3:4b    # Free model from Ollama (llama3, mistral, codellama also available)
+  base_url: http://localhost:11434  # Ollama API endpoint
+  temperature: 0.1
+  max_tokens: 1000
+  enabled: true  # Set to false to use rule-based only
+
 agent:
   dry_run: false
   auto_fix_enabled: true
   log_level: INFO
 
 fix_strategies:
+  # === POD ISSUES ===
   image_pull_backoff:
     action: update_image_tag
     fallback_image: nginx:latest
@@ -33,6 +42,39 @@ fix_strategies:
   pending:
     action: adjust_scheduling
     add_node_selector: false
+
+  # === SERVICE ISSUES ===
+  service_no_endpoints:
+    action: restart_pods
+    check_selector: true
+
+  # === PVC ISSUES ===
+  pvc_pending:
+    action: check_storage_class
+    allow_recreate: false
+
+  pvc_lost:
+    action: alert_only
+    # Requires manual intervention
+
+  # === DEPLOYMENT ISSUES ===
+  deployment_not_ready:
+    action: restart_deployment
+    max_restarts: 3
+
+  # === INGRESS ISSUES ===
+  ingress_error:
+    action: reapply_ingress
+    check_tls: true
+
+  # === NODE ISSUES ===
+  node_not_ready:
+    action: drain_node
+    auto_drain: false
+
+  node_memory_pressure:
+    action: evict_pods
+    auto_evict: false
 
 deployment:
   deployment_dir: ./deployments

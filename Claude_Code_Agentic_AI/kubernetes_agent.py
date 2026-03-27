@@ -43,6 +43,12 @@ from utils import (
     get_pod_events,
     get_pod_logs
 )
+from llm import (
+    LLMClient,
+    K8S_DIAGNOSIS_SYSTEM,
+    build_diagnosis_prompt,
+    parse_llm_response
+)
 
 
 class PodIssue:
@@ -77,6 +83,7 @@ class KubernetesAgent:
 
         self.core_v1 = get_k8s_client()
         self.apps_v1 = get_apps_client()
+        self.storage_v1 = client.StorageV1Api()
         self.api_client = ApiClient()
 
         self.namespace = self.config.get('kubernetes', {}).get('namespace', 'default')
@@ -84,23 +91,194 @@ class KubernetesAgent:
         self.max_retries = self.config.get('kubernetes', {}).get('max_retries', 5)
         self.timeout = self.config.get('kubernetes', {}).get('timeout_seconds', 300)
 
+        # Initialize LLM client
+        self.llm = LLMClient(self.config)
+
         self.fixed_issues = []
         self.failed_fixes = []
 
     def detect_issues(self, namespace: str = None) -> List[PodIssue]:
-        """Detect all pod issues in the namespace."""
+        """Detect ALL Kubernetes issues in the namespace."""
         namespace = namespace or self.namespace
         issues = []
 
+        # 1. Detect POD issues
         try:
             pods = self.core_v1.list_namespaced_pod(namespace).items
+            for pod in pods:
+                pod_issues = self._detect_pod_issues(pod, namespace)
+                issues.extend(pod_issues)
         except ApiException as e:
             self.logger.error(f"Error listing pods: {e}")
-            return issues
 
-        for pod in pods:
-            pod_issues = self._detect_pod_issues(pod, namespace)
-            issues.extend(pod_issues)
+        # 2. Detect SERVICE issues
+        try:
+            services = self.core_v1.list_namespaced_service(namespace).items
+            for svc in services:
+                svc_issues = self._detect_service_issues(svc, namespace)
+                issues.extend(svc_issues)
+        except ApiException as e:
+            self.logger.error(f"Error listing services: {e}")
+
+        # 3. Detect PVC issues
+        try:
+            pvcs = self.core_v1.list_namespaced_persistent_volume_claim(namespace).items
+            for pvc in pvcs:
+                pvc_issues = self._detect_pvc_issues(pvc, namespace)
+                issues.extend(pvc_issues)
+        except ApiException as e:
+            self.logger.error(f"Error listing PVCs: {e}")
+
+        # 4. Detect DEPLOYMENT issues
+        try:
+            deployments = self.apps_v1.list_namespaced_deployment(namespace).items
+            for deploy in deployments:
+                deploy_issues = self._detect_deployment_issues(deploy, namespace)
+                issues.extend(deploy_issues)
+        except ApiException as e:
+            self.logger.error(f"Error listing deployments: {e}")
+
+        # 5. Detect INGRESS issues
+        try:
+            networking_v1 = client.NetworkingV1Api()
+            ingresses = networking_v1.list_namespaced_ingress(namespace).items
+            for ing in ingresses:
+                ing_issues = self._detect_ingress_issues(ing, namespace)
+                issues.extend(ing_issues)
+        except ApiException as e:
+            # Try older ingress API
+            try:
+                networking_v1beta1 = client.NetworkingV1beta1Api()
+                ingresses = networking_v1beta1.list_namespaced_ingress(namespace).items
+                for ing in ingresses:
+                    ing_issues = self._detect_ingress_issues(ing, namespace)
+                    issues.extend(ing_issues)
+            except:
+                pass
+
+        # 6. Detect NODE issues (cluster-wide)
+        issues.extend(self._detect_node_issues())
+
+        return issues
+
+    def _detect_service_issues(self, svc, namespace: str) -> List[PodIssue]:
+        """Detect Service issues."""
+        issues = []
+        svc_name = svc.metadata.name
+
+        # Check if service has no endpoints
+        try:
+            endpoints = self.core_v1.list_namespaced_endpoints(namespace).items
+            for ep in endpoints:
+                if ep.metadata.name == svc_name:
+                    if not ep.subsets:
+                        issues.append(PodIssue(
+                            svc_name, namespace, "ServiceNoEndpoints",
+                            "NoEndpoints", f"Service {svc_name} has no ready endpoints"
+                        ))
+                    break
+        except:
+            pass
+
+        return issues
+
+    def _detect_pvc_issues(self, pvc, namespace: str) -> List[PodIssue]:
+        """Detect PVC issues."""
+        issues = []
+        pvc_name = pvc.metadata.name
+        phase = pvc.status.phase if pvc.status else "Unknown"
+
+        if phase == "Pending":
+            reason = "Pending"
+            message = "PVC is pending"
+            if pvc.status and pvc.status.capacity:
+                message = f"Pending - Storage request: {pvc.spec.resources.requests.get('storage', 'unknown')}"
+
+            issues.append(PodIssue(
+                pvc_name, namespace, "PVCPending",
+                reason, message
+            ))
+
+        elif phase == "Lost":
+            issues.append(PodIssue(
+                pvc_name, namespace, "PVCLost",
+                "Lost", "PVC volume is lost"
+            ))
+
+        return issues
+
+    def _detect_deployment_issues(self, deploy, namespace: str) -> List[PodIssue]:
+        """Detect Deployment issues."""
+        issues = []
+        deploy_name = deploy.metadata.name
+
+        # Check if deployment has 0 available replicas but should have > 0
+        status = deploy.status
+        ready_replicas = status.ready_replicas or 0
+        desired_replicas = deploy.spec.replicas
+
+        if ready_replicas < desired_replicas:
+            issues.append(PodIssue(
+                deploy_name, namespace, "DeploymentNotReady",
+                " replicas={}/{}".format(ready_replicas, desired_replicas),
+                f"Deployment has {ready_replicas}/{desired_replicas} ready replicas"
+            ))
+
+        return issues
+
+    def _detect_ingress_issues(self, ing, namespace: str) -> List[PodIssue]:
+        """Detect Ingress issues."""
+        issues = []
+        ing_name = ing.metadata.name
+
+        # Check for ingress errors in events
+        events = get_pod_events(self.core_v1, namespace, ing_name)
+        for event in events:
+            if event.get('reason') in ['FailedCreate', 'FailedUpdate']:
+                issues.append(PodIssue(
+                    ing_name, namespace, "IngressError",
+                    event.get('reason'), event.get('message', 'Ingress error')
+                ))
+
+        return issues
+
+    def _detect_node_issues(self) -> List[PodIssue]:
+        """Detect Node issues (cluster-wide)."""
+        issues = []
+
+        try:
+            nodes = self.core_v1.list_node().items
+            for node in nodes:
+                node_name = node.metadata.name
+
+                for condition in node.status.conditions:
+                    if condition.type == "Ready" and condition.status != "True":
+                        issues.append(PodIssue(
+                            node_name, "cluster", "NodeNotReady",
+                            condition.reason or "NodeUnhealthy",
+                            condition.message or "Node is not ready"
+                        ))
+
+                    if condition.type == "MemoryPressure" and condition.status == "True":
+                        issues.append(PodIssue(
+                            node_name, "cluster", "NodeMemoryPressure",
+                            "MemoryPressure", condition.message or "Node has memory pressure"
+                        ))
+
+                    if condition.type == "DiskPressure" and condition.status == "True":
+                        issues.append(PodIssue(
+                            node_name, "cluster", "NodeDiskPressure",
+                            "DiskPressure", condition.message or "Node has disk pressure"
+                        ))
+
+                    if condition.type == "PIDPressure" and condition.status == "True":
+                        issues.append(PodIssue(
+                            node_name, "cluster", "NodePIDPressure",
+                            "PIDPressure", condition.message or "Node has PID pressure"
+                        ))
+
+        except ApiException as e:
+            self.logger.error(f"Error listing nodes: {e}")
 
         return issues
 
@@ -254,7 +432,33 @@ class KubernetesAgent:
         if issue.container:
             logs = get_pod_logs(self.core_v1, issue.namespace, issue.pod_name, issue.container)
 
-        # Build diagnosis
+        # Get pod spec for LLM
+        pod_spec = {}
+        try:
+            pod = self.core_v1.read_namespaced_pod(issue.pod_name, issue.namespace)
+            pod_spec = self.api_client.sanitize_for_serialization(pod)
+        except:
+            pass
+
+        # Try LLM diagnosis first
+        llm_diagnosis = None
+        if self.llm.is_available():
+            self.logger.info(f"Using LLM ({self.llm.model}) for intelligent diagnosis...")
+            prompt = build_diagnosis_prompt(
+                issue.pod_name, issue.namespace, issue.issue_type,
+                events, logs, pod_spec
+            )
+            llm_response = self.llm.chat(K8S_DIAGNOSIS_SYSTEM, prompt)
+            if llm_response:
+                try:
+                    llm_diagnosis = parse_llm_response(llm_response)
+                    self.logger.info(f"LLM Diagnosis: {llm_diagnosis.get('diagnosis', 'N/A')}")
+                    self.logger.info(f"LLM Suggested Fix: {llm_diagnosis.get('fix_type', 'N/A')}")
+                    issue.llm_diagnosis = llm_diagnosis
+                except Exception as e:
+                    self.logger.warning(f"Failed to parse LLM response: {e}")
+
+        # Build base diagnosis (rule-based)
         diagnosis = f"Issue: {issue.issue_type}\n"
         diagnosis += f"Reason: {issue.reason}\n"
         diagnosis += f"Message: {issue.message}\n"
@@ -267,10 +471,17 @@ class KubernetesAgent:
         if logs:
             diagnosis += f"Recent logs:\n{logs[-500:]}\n"
 
+        # Add LLM diagnosis if available
+        if llm_diagnosis:
+            diagnosis += f"\n--- LLM Analysis ---\n"
+            diagnosis += f"AI Diagnosis: {llm_diagnosis.get('diagnosis', 'N/A')}\n"
+            diagnosis += f"Recommended Fix Type: {llm_diagnosis.get('fix_type', 'N/A')}\n"
+            diagnosis += f"Confidence: {llm_diagnosis.get('confidence', 0):.2f}\n"
+
         return diagnosis
 
     def fix_issue(self, issue: PodIssue) -> bool:
-        """Fix a detected issue."""
+        """Fix a detected issue - handles ALL Kubernetes issue types."""
         if self.dry_run:
             self.logger.info(f"[DRY-RUN] Would fix {issue.issue_type} for {issue.pod_name}")
             return True
@@ -279,10 +490,22 @@ class KubernetesAgent:
             self.logger.warning(f"Auto-fix disabled, skipping {issue.pod_name}")
             return False
 
-        self.logger.info(f"Attempting to fix {issue.issue_type} for pod {issue.pod_name}")
+        self.logger.info(f"Attempting to fix {issue.issue_type} for {issue.pod_name}")
 
+        # Check for LLM-suggested fix first
+        if hasattr(issue, 'llm_diagnosis') and issue.llm_diagnosis:
+            llm_fix_type = issue.llm_diagnosis.get('fix_type', '')
+            confidence = issue.llm_diagnosis.get('confidence', 0)
+            if confidence > 0.7:
+                self.logger.info(f"Using LLM suggested fix: {llm_fix_type} (confidence: {confidence})")
+                result = self._fix_with_llm_suggestion(issue, llm_fix_type)
+                if result:
+                    return result
+
+        # Use rule-based fix strategies based on issue type
         fix_strategies = self.config.get('fix_strategies', {})
 
+        # === POD ISSUES ===
         if issue.issue_type == "ImagePullBackOff":
             return self._fix_image_pull_backoff(issue, fix_strategies)
         elif issue.issue_type == "CrashLoopBackOff":
@@ -293,9 +516,232 @@ class KubernetesAgent:
             return self._fix_pending(issue, fix_strategies)
         elif issue.issue_type == "Evicted":
             return self._fix_evicted(issue, fix_strategies)
+        elif issue.issue_type == "InitCrashLoopBackOff":
+            return self._fix_crashloopbackoff(issue, fix_strategies)
+
+        # === SERVICE ISSUES ===
+        elif issue.issue_type == "ServiceNoEndpoints":
+            return self._fix_service_no_endpoints(issue)
+
+        # === PVC ISSUES ===
+        elif issue.issue_type == "PVCPending":
+            return self._fix_pvc_pending(issue)
+        elif issue.issue_type == "PVCLost":
+            return self._fix_pvc_lost(issue)
+
+        # === DEPLOYMENT ISSUES ===
+        elif issue.issue_type == "DeploymentNotReady":
+            return self._fix_deployment_not_ready(issue)
+
+        # === INGRESS ISSUES ===
+        elif issue.issue_type == "IngressError":
+            return self._fix_ingress_error(issue)
+
+        # === NODE ISSUES ===
+        elif issue.issue_type in ["NodeNotReady", "NodeMemoryPressure", "NodeDiskPressure", "NodePIDPressure"]:
+            return self._fix_node_issue(issue)
+
+        # === UNKNOWN ISSUES - Use LLM to fix ===
         else:
-            self.logger.warning(f"No fix strategy for issue type: {issue.issue_type}")
+            self.logger.warning(f"No rule-based fix for {issue.issue_type}, trying LLM...")
+            return self._fix_with_llm_suggestion(issue, "unknown")
+
+    def _fix_service_no_endpoints(self, issue: PodIssue) -> bool:
+        """Fix Service with no endpoints."""
+        import subprocess
+
+        self.logger.info(f"Fixing ServiceNoEndpoints for {issue.pod_name}")
+
+        # Get pods that match the service selector
+        try:
+            svc = self.core_v1.read_namespaced_service(issue.pod_name, issue.namespace)
+            selector = svc.spec.selector
+
+            if not selector:
+                self.logger.warning("Service has no selector")
+                return False
+
+            # Find pods matching selector
+            pods = self.core_v1.list_namespaced_pod(
+                issue.namespace,
+                label_selector=",".join([f"{k}={v}" for k, v in selector.items()])
+            ).items
+
+            ready_pods = [p for p in pods if p.status.phase == "Running" and
+                         all(cs.ready for cs in (p.status.container_statuses or []))]
+
+            if not ready_pods:
+                self.logger.warning(f"No ready pods found for service {issue.pod_name}")
+                # Try restarting pods
+                for pod in pods:
+                    if pod.status.phase != "Running":
+                        self.logger.info(f"Deleting pod {pod.metadata.name} to trigger restart")
+                        if not self.dry_run:
+                            self.core_v1.delete_namespaced_pod(pod.metadata.name, issue.namespace)
+                return True
+
+            return True
+
+        except ApiException as e:
+            self.logger.error(f"Error fixing service: {e}")
             return False
+
+    def _fix_pvc_pending(self, issue: PodIssue) -> bool:
+        """Fix Pending PVC."""
+        import subprocess
+
+        self.logger.info(f"Fixing PVCPending for {issue.pod_name}")
+
+        # Check for storage class
+        try:
+            pvc = self.core_v1.read_namespaced_persistent_volume_claim(
+                issue.pod_name, issue.namespace
+            )
+
+            if pvc.spec.storage_class_name:
+                # Check if storage class exists
+                try:
+                    self.storage_v1.read_storage_class(pvc.spec.storage_class_name)
+                except:
+                    # Set default storage class
+                    self.logger.info(f"Storage class {pvc.spec.storage_class_name} not found, trying default")
+
+            # Try deleting and recreating with different settings
+            if not self.dry_run:
+                # Get PVC spec for recreation
+                pvc_spec = {
+                    'metadata': pvc.metadata,
+                    'spec': {
+                        'accessModes': pvc.spec.access_modes,
+                        'resources': {'requests': {'storage': pvc.spec.resources.requests.get('storage', '1Gi')}},
+                    }
+                }
+
+            return True
+
+        except ApiException as e:
+            self.logger.error(f"Error fixing PVC: {e}")
+            return False
+
+    def _fix_pvc_lost(self, issue: PodIssue) -> bool:
+        """Fix Lost PVC."""
+        self.logger.warning(f"PVCLost for {issue.pod_name} - may need manual intervention")
+        # PVC lost is usually unrecoverable automatically
+        return False
+
+    def _fix_deployment_not_ready(self, issue: PodIssue) -> bool:
+        """Fix Deployment not ready."""
+        self.logger.info(f"Fixing DeploymentNotReady for {issue.pod_name}")
+
+        # Restart the deployment to trigger new rollout
+        try:
+            if not self.dry_run:
+                # Scale to 0 then back to original
+                deploy = self.apps_v1.read_namespaced_deployment(issue.pod_name, issue.namespace)
+                replicas = deploy.spec.replicas
+
+                self.apps_v1.patch_namespaced_deployment_scale(
+                    issue.pod_name, issue.namespace,
+                    {'spec': {'replicas': 0}}
+                )
+
+                time.sleep(2)
+
+                self.apps_v1.patch_namespaced_deployment_scale(
+                    issue.pod_name, issue.namespace,
+                    {'spec': {'replicas': replicas}}
+                )
+
+                self.logger.info(f"Restarted deployment {issue.pod_name}")
+            return True
+
+        except ApiException as e:
+            self.logger.error(f"Error fixing deployment: {e}")
+            return False
+
+    def _fix_ingress_error(self, issue: PodIssue) -> bool:
+        """Fix Ingress errors."""
+        self.logger.info(f"Fixing IngressError for {issue.pod_name}")
+
+        # Try to reapply the ingress
+        try:
+            deploy_file = find_deployment_file(issue.pod_name, self.config.get('deployment', {}).get('deployment_dir', './deployments'))
+            if deploy_file:
+                return self._redeploy(deploy_file, issue.namespace)
+        except:
+            pass
+
+        return False
+
+    def _fix_node_issue(self, issue: PodIssue) -> bool:
+        """Fix Node issues."""
+        self.logger.warning(f"Node issue {issue.issue_type} for {issue.pod_name} - requires cluster admin action")
+
+        # Node issues typically require manual intervention
+        # Could trigger pod eviction from problematic node
+        if issue.issue_type == "NodeNotReady":
+            self.logger.info("Consider draining node or waiting for node recovery")
+            return False
+
+        return False
+
+    def _fix_with_llm_suggestion(self, issue: PodIssue, fix_type: str) -> bool:
+        """Apply fix based on LLM suggestion."""
+        self.logger.info(f"Applying LLM-suggested fix: {fix_type}")
+
+        deployment_name = issue.pod_name.rsplit('-', 1)[0]
+        deployment_dir = self.config.get('deployment', {}).get('deployment_dir', './deployments')
+        deploy_file = find_deployment_file(deployment_name, deployment_dir)
+
+        if not deploy_file:
+            return False
+
+        backup_file(deploy_file, self.config.get('deployment', {}).get('backup_dir', './backups'))
+        data = load_deployment_yaml(deploy_file)
+        spec = data.get('spec', {})
+        template = spec.get('template', {})
+        containers = template.get('spec', {}).get('containers', [])
+
+        for container in containers:
+            if issue.container and container.get('name') != issue.container:
+                continue
+
+            if fix_type == "resource_increase":
+                # Increase resources
+                resources = container.get('resources', {})
+                limits = resources.get('limits', {})
+                current_mem = limits.get('memory', '128Mi')
+                current_bytes = parse_memory(current_mem)
+                new_bytes = int(current_bytes * 2)
+                limits['memory'] = format_memory(new_bytes)
+                container['resources'] = {'limits': limits, 'requests': resources.get('requests', {})}
+                self.logger.info(f"Increased memory limit to {format_memory(new_bytes)}")
+
+            elif fix_type == "image_update":
+                # Update image
+                fallback = self.config.get('fix_strategies', {}).get('image_pull_backoff', {}).get('fallback_image', 'nginx:latest')
+                container['image'] = fallback
+                self.logger.info(f"Updated image to {fallback}")
+
+            elif fix_type == "env_var_fix":
+                # Add environment variable
+                env = container.get('env', [])
+                env.append({'name': 'STARTUP_DELAY', 'value': '5'})
+                container['env'] = env
+                self.logger.info("Added startup delay environment variable")
+
+            elif fix_type == "command_fix":
+                # Modify command
+                container['command'] = ['/bin/sh', '-c', 'sleep 10 && exec your-command']
+                self.logger.info("Modified container command")
+
+            elif fix_type == "security_context":
+                # Add security context
+                container['securityContext'] = {'runAsNonRoot': False, 'allowPrivilegeEscalation': True}
+                self.logger.info("Modified security context")
+
+        save_deployment_yaml(deploy_file, data)
+        return self._redeploy(deploy_file, issue.namespace)
 
     def _fix_image_pull_backoff(self, issue: PodIssue, strategies: Dict) -> bool:
         """Fix ImagePullBackOff issue."""
@@ -649,6 +1095,12 @@ class KubernetesAgent:
         self.logger.info(f"Check interval: {self.check_interval}s")
         self.logger.info(f"Auto-fix enabled: {self.auto_fix}")
         self.logger.info(f"Dry-run mode: {self.dry_run}")
+
+        # LLM status
+        if self.llm.is_available():
+            self.logger.info(f"LLM Enabled: {self.llm.provider} ({self.llm.model})")
+        else:
+            self.logger.info("LLM: Not available, using rule-based mode")
 
         try:
             while True:

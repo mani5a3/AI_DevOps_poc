@@ -1,0 +1,29 @@
+# Issue: InitCrashLoopBackOff - Init container crashes
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: init-crash-loop
+  labels:
+    app: init-crash-loop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: init-crash-loop
+  template:
+    metadata:
+      labels:
+        app: init-crash-loop
+    spec:
+      initContainers:
+      - name: init-container
+        image: busybox
+        command: ["/bin/sh", "-c", "echo $MISSING_INIT_VAR && exit 1"]
+        env:
+        - name: MISSING_INIT_VAR
+          value: ""
+      containers:
+      - name: app
+        image: nginx:latest
+        ports:
+        - containerPort: 80

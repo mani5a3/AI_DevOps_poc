@@ -1,0 +1,35 @@
+# Issue: ConfigMapMountError - ConfigMap mount failure
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+data:
+  config.json: '{"key": "value"}'
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configmap-mount-error
+  labels:
+    app: configmap-mount-error
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configmap-mount-error
+  template:
+    metadata:
+      labels:
+        app: configmap-mount-error
+    spec:
+      containers:
+      - name: app
+        image: nginx:latest
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: non-existent-configmap  # This doesn't exist!

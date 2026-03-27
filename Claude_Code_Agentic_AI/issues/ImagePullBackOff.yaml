@@ -1,0 +1,22 @@
+# Issue: ImagePullBackOff - Invalid/missing container image
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-pull-error
+  labels:
+    app: image-pull-error
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: image-pull-error
+  template:
+    metadata:
+      labels:
+        app: image-pull-error
+    spec:
+      containers:
+      - name: app
+        image: nginx:invalid-tag-xyz-12345
+        ports:
+        - containerPort: 80
