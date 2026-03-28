@@ -1,4 +1,21 @@
+# =============================================================================
 # Issue: TaintToleration - Pod cannot tolerate node taints
+# =============================================================================
+# Description:
+#   Pod has tolerations that don't match node taints. The pod cannot be
+#   scheduled to any node that has taints it can't tolerate.
+#
+# Symptoms:
+#   - Pod status: Pending
+#   - Events: "node(s) had taints that the pod didn't tolerate"
+#
+# Resolution:
+#   1. Check node taints: kubectl describe nodes | grep Taints
+#   2. Add matching tolerations to the pod spec
+#   3. Remove unnecessary taints from nodes
+#   4. Use proper effect values (NoSchedule, NoExecute, PreferNoSchedule)
+#   5. Add tolerationSeconds for NoExecute taints
+# =============================================================================
 apiVersion: v1
 kind: Pod
 metadata:

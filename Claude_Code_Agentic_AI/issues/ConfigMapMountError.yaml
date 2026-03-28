@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: ConfigMapMountError - ConfigMap mount failure
+# =============================================================================
+# Description:
+#   Pod fails to start because it references a ConfigMap that doesn't exist.
+#   The volume mount configuration points to a non-existent ConfigMap.
+#
+# Symptoms:
+#   - Pod status: ContainerCreating or Error
+#   - Events: "not found: ConfigMap <name>"
+#   - Volume mount fails
+#
+# Resolution:
+#   1. Create the missing ConfigMap: kubectl create configmap <name>
+#   2. Verify the ConfigMap name matches the volume reference
+#   3. Ensure ConfigMap is in the same namespace as the pod
+#   4. Check the volume mount configuration in the pod spec
+#   5. Use optional: true if the ConfigMap is optional
+# =============================================================================
 apiVersion: v1
 kind: ConfigMap
 metadata:

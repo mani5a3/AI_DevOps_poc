@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: MemoryPressure - Node has memory pressure
+# =============================================================================
+# Description:
+#   Node is experiencing memory pressure, causing pod evictions or scheduling
+#   issues. The node's memory is running low.
+#
+# Symptoms:
+#   - Pods show evicted status with MemoryPressure reason
+#   - New pods cannot be scheduled
+#   - Node condition: MemoryPressure=true
+#
+# Resolution:
+#   1. Check node memory: kubectl top nodes
+#   2. Evict or resize memory-heavy pods
+#   3. Add more nodes to the cluster
+#   4. Reduce memory requests for non-critical pods
+#   5. Enable memory limits on all pods to prevent overuse
+# =============================================================================
 apiVersion: v1
 kind: Pod
 metadata:

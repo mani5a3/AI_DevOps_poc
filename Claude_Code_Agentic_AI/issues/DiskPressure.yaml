@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: DiskPressure - Node has disk pressure
+# =============================================================================
+# Description:
+#   Node is experiencing disk pressure, affecting pod scheduling and causing
+#   evictions. Disk space is running low on the node.
+#
+# Symptoms:
+#   - Pods show evicted status with DiskPressure reason
+#   - New pods cannot be scheduled
+#   - Node condition: DiskPressure=true
+#
+# Resolution:
+#   1. Check disk usage: kubectl top nodes or df -h
+#   2. Remove unused images: crictl rmi --prune
+#   3. Clean up unused volumes and pods
+#   4. Add more nodes to the cluster
+#   5. Enable local storage limits on pods
+# =============================================================================
 apiVersion: v1
 kind: Pod
 metadata:

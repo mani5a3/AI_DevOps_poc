@@ -1,4 +1,21 @@
+# =============================================================================
 # Issue: ServiceNoEndpoints - Service has no endpoints
+# =============================================================================
+# Description:
+#   Service selector does not match any running pods, resulting in no endpoints.
+#   This commonly happens when the deployment has 0 replicas or labels mismatch.
+#
+# Symptoms:
+#   - Service has no endpoints: kubectl get endpoints <service>
+#   - DNS resolves but connection fails
+#
+# Resolution:
+#   1. Ensure the deployment has replicas > 0
+#   2. Verify service selector matches pod labels
+#   3. Check if pods are in Ready state
+#   4. Review the deployment status
+#   5. Ensure pods are in the same namespace as the service
+# =============================================================================
 apiVersion: v1
 kind: Service
 metadata:

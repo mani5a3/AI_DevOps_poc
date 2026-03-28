@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: ReadinessProbeFailure - Readiness probe check failing
+# =============================================================================
+# Description:
+#   Readiness probe keeps failing, preventing the pod from receiving traffic.
+#   The pod is removed from service endpoints but not restarted.
+#
+# Symptoms:
+#   - Pod status shows 0/1 Ready
+#   - Pod excluded from service endpoints
+#   - Events: "Readiness probe failed"
+#
+# Resolution:
+#   1. Check the readiness probe configuration
+#   2. Verify the application health endpoint is working
+#   3. Ensure the probe port is correct
+#   4. Adjust initialDelaySeconds for startup time
+#   5. Review application logs for issues
+# =============================================================================
 apiVersion: v1
 kind: Pod
 metadata:

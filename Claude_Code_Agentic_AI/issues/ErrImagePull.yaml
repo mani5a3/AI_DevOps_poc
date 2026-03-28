@@ -1,4 +1,22 @@
-# Issue: ErrImagePull - Image pull error (similar to ImagePullBackOff but immediate)
+# =============================================================================
+# Issue: ErrImagePull - Image pull error
+# =============================================================================
+# Description:
+#   Kubernetes cannot pull the container image immediately. Unlike ImagePullBackOff,
+#   this error occurs on the first pull attempt without backoff delay.
+#
+# Symptoms:
+#   - Pod status: ErrImagePull
+#   - Events: "Failed to pull image", "invalid reference format"
+#   - May transition to ImagePullBackOff after retries
+#
+# Resolution:
+#   1. Verify the image name and tag format is correct
+#   2. Check if the image exists in the registry
+#   3. Ensure the registry is accessible
+#   4. If private registry, add imagePullSecrets
+#   5. Try pulling the image manually to diagnose
+# =============================================================================
 apiVersion: apps/v1
 kind: Deployment
 metadata:

@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: Pending - Pod cannot be scheduled (unschedulable)
+# =============================================================================
+# Description:
+#   Pod cannot be scheduled because no node can satisfy its resource requirements.
+#   This usually happens due to insufficient cluster resources or misconfigured
+#   node selectors/taints.
+#
+# Symptoms:
+#   - Pod status: Pending
+#   - Events: "0/xx nodes are available", "Insufficient cpu/memory"
+#
+# Resolution:
+#   1. Check cluster resource capacity: kubectl describe nodes
+#   2. Reduce pod resource requests if possible
+#   3. Add more nodes to the cluster
+#   4. Review node selectors and taints
+#   5. Check for conflicting pod affinity/anti-affinity rules
+# =============================================================================
 apiVersion: apps/v1
 kind: Deployment
 metadata:

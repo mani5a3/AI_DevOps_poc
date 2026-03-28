@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: RBACForbiddenError - Pod with forbidden permissions
+# =============================================================================
+# Description:
+#   Pod is using a service account with insufficient RBAC permissions.
+#   The container tries to perform operations that are not allowed.
+#
+# Symptoms:
+#   - Pod runs but operations fail with "Forbidden" errors
+#   - Events show RBAC permission denied messages
+#   - Container logs show API access errors
+#
+# Resolution:
+#   1. Review the service account: kubectl get serviceaccount <sa-name>
+#   2. Create/update RBAC roles/clusterroles with needed permissions
+#   3. Bind the role to the service account
+#   4. Use the principle of least privilege
+#   5. Test with a service account that has appropriate permissions
+# =============================================================================
 apiVersion: apps/v1
 kind: Deployment
 metadata:

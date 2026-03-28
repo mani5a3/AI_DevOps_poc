@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: IngressError - Ingress with invalid configuration
+# =============================================================================
+# Description:
+#   Ingress resource has invalid configuration such as invalid host, missing
+#   service backend, or incorrect port configuration.
+#
+# Symptoms:
+#   - Ingress events show errors
+#   - External traffic fails to reach the service
+#   - Ingress controller logs show warnings/errors
+#
+# Resolution:
+#   1. Validate the ingress YAML configuration
+#   2. Ensure the backend service exists
+#   3. Verify the service port number is correct
+#   4. Check the host domain is valid
+#   5. Review ingress controller logs for details
+# =============================================================================
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:

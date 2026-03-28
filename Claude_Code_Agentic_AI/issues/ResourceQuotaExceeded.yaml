@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: ResourceQuotaExceeded - Exceeded resource quota
+# =============================================================================
+# Description:
+#   Pod requests exceed the ResourceQuota limits set on the namespace.
+#   The pod cannot be scheduled due to quota constraints.
+#
+# Symptoms:
+#   - Pod status: Pending
+#   - Events: "exceeded quota", "exceeded ResourceQuota"
+#   - Namespace has ResourceQuota applied
+#
+# Resolution:
+#   1. Check namespace quota: kubectl get resourcequota -n <namespace>
+#   2. Request smaller resource quantities
+#   3. Request quota increase from cluster admin
+#   4. Delete unused resources in the namespace
+#   5. Review and optimize resource requests
+# =============================================================================
 apiVersion: v1
 kind: Pod
 metadata:

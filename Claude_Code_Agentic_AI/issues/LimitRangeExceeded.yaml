@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: LimitRangeExceeded - Pod exceeds LimitRange constraints
+# =============================================================================
+# Description:
+#   Pod resource requests/limits exceed the LimitRange constraints set on
+#   the namespace, preventing pod creation.
+#
+# Symptoms:
+#   - Pod status: Pending or Error
+#   - Events: "exceeds LimitRange", "limit range exceeded"
+#   - Namespace has LimitRange applied
+#
+# Resolution:
+#   1. Check namespace LimitRange: kubectl get limitrange -n <namespace>
+#   2. Adjust pod resources to within limits
+#   3. Request limit range update from cluster admin
+#   4. Ensure resources meet the minimum requirements
+#   5. Remove unnecessary resource limits/requests
+# =============================================================================
 apiVersion: v1
 kind: Pod
 metadata:

@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: PodUnhealthy - Pod not in Ready state
+# =============================================================================
+# Description:
+#   Pod is running but not in Ready state, usually due to failed readiness probe.
+#   The application is not accepting traffic even though the container is running.
+#
+# Symptoms:
+#   - Pod status shows 0/1 Ready
+#   - Readiness probe fails
+#   - Service excludes pod from endpoints
+#
+# Resolution:
+#   1. Check readiness probe configuration
+#   2. Verify the health check endpoint/path exists in the application
+#   3. Review container logs for application errors
+#   4. Adjust initialDelaySeconds to allow startup time
+#   5. Ensure the probe port matches the application port
+# =============================================================================
 apiVersion: v1
 kind: Pod
 metadata:

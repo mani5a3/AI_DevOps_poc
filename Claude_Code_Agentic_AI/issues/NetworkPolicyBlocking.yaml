@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: NetworkPolicyBlocking - Network policy blocks traffic
+# =============================================================================
+# Description:
+#   NetworkPolicy blocks all ingress or egress traffic to/from the pod.
+#   Empty policyTypes or empty ingress/egress rules deny all traffic.
+#
+# Symptoms:
+#   - Pod cannot receive external traffic
+#   - Pod cannot connect to external services
+#   - Application shows connection refused errors
+#
+# Resolution:
+#   1. Review the NetworkPolicy: kubectl get networkpolicy <name> -o yaml
+#   2. Add ingress rules to allow necessary traffic
+#   3. Add egress rules for external connections
+#   4. Use pod selector to target specific pods
+#   5. Test connectivity after policy updates
+# =============================================================================
 apiVersion: apps/v1
 kind: Deployment
 metadata:

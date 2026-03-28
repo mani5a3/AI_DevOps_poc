@@ -1,5 +1,21 @@
+# =============================================================================
 # Issue: Evicted - Pod evicted due to node pressure
-# Note: This will only trigger eviction under node pressure conditions
+# =============================================================================
+# Description:
+#   Pod is evicted from the node due to resource pressure (memory, disk, or PID).
+#   This happens when the node cannot accommodate the pod's resource requests.
+#
+# Symptoms:
+#   - Pod status: Evicted
+#   - Reason: "MemoryPressure", "DiskPressure", or "PIDPressure"
+#
+# Resolution:
+#   1. Add resource tolerations for node conditions
+#   2. Reduce pod resource requests if possible
+#   3. Add more nodes to the cluster
+#   4. Configure pod disruption budgets for critical workloads
+#   5. Clean up unused pods and resources
+# =============================================================================
 apiVersion: apps/v1
 kind: Deployment
 metadata:

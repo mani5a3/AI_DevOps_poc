@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: DeploymentNotReady - Deployment has unavailable replicas
+# =============================================================================
+# Description:
+#   Deployment cannot reach the desired number of ready replicas due to
+#   issues with pod creation, image pull errors, or probe failures.
+#
+# Symptoms:
+#   - Deployment status: 0/3 Ready
+#   - Available replicas less than desired replicas
+#   - Events show the underlying issue
+#
+# Resolution:
+#   1. Check pod status: kubectl get pods -l app=<deployment>
+#   2. Review pod events: kubectl describe pod <pod-name>
+#   3. Fix the underlying pod issue
+#   4. Check readiness/liveness probe configuration
+#   5. Verify the container image is accessible
+# =============================================================================
 apiVersion: apps/v1
 kind: Deployment
 metadata:

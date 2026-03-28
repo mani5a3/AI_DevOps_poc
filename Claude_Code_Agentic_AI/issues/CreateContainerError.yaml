@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: CreateContainerError - Container cannot be created
+# =============================================================================
+# Description:
+#   Pod cannot create the container due to invalid configuration like
+#   invalid security context, missing capabilities, or privileged mode issues.
+#
+# Symptoms:
+#   - Pod status: CreateContainerError
+#   - Events: "container cannot be created", "invalid security context"
+#   - Pod stays in ContainerCreating state
+#
+# Resolution:
+#   1. Review container security context settings
+#   2. Remove invalid capability names from the list
+#   3. Check PodSecurityPolicy or OPA constraints
+#   4. Verify the container user exists in the image
+#   5. Disable privileged mode if not required
+# =============================================================================
 apiVersion: apps/v1
 kind: Deployment
 metadata:

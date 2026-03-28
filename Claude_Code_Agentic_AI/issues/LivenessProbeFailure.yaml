@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: LivenessProbeFailure - Liveness probe check failing
+# =============================================================================
+# Description:
+#   Liveness probe keeps failing, indicating the application is unhealthy.
+#   Kubernetes will restart the container after failureThreshold is reached.
+#
+# Symptoms:
+#   - Pod status shows unhealthy liveness probe
+#   - Container restarts repeatedly
+#   - Events: "Liveness probe failed"
+#
+# Resolution:
+#   1. Review the liveness probe configuration
+#   2. Fix the health check endpoint in the application
+#   3. Adjust failureThreshold and periodSeconds
+#   4. Increase initialDelaySeconds for slow-starting apps
+#   5. Check application logs for crash reasons
+# =============================================================================
 apiVersion: v1
 kind: Pod
 metadata:

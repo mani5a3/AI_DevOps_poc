@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: PodDisruptionBudgetNotSatisfied - PDB blocking eviction
+# =============================================================================
+# Description:
+#   PodDisruptionBudget prevents pod evictions because minAvailable is too
+#   high for the current cluster capacity.
+#
+# Symptoms:
+#   - Pod evictions fail due to PDB
+#   - Draining nodes fails
+#   - Events: "Cannot evict pod as it would violate PDB"
+#
+# Resolution:
+#   1. Review PDB minAvailable value
+#   2. Adjust to allow evictions: use percentage or lower number
+#   3. Ensure sufficient replicas exist for the PDB
+#   4. Consider using maxUnavailable for rolling updates
+#   5. Temporarily delete PDB during maintenance if safe
+# =============================================================================
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:

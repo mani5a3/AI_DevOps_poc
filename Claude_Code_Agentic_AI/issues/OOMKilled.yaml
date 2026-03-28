@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: OOMKilled - Container killed due to out of memory
+# =============================================================================
+# Description:
+#   Container is killed by the OOM (Out of Memory) killer. The memory limit is
+#   too low for the application to run properly.
+#
+# Symptoms:
+#   - Pod status: OOMKilled
+#   - Container restart count increases
+#   - Events: "Container killed due to memory limit exceeded"
+#
+# Resolution:
+#   1. Increase memory limits in the container resources section
+#   2. Review the application's memory usage
+#   3. Check for memory leaks in the application
+#   4. Set appropriate memory requests and limits
+#   5. Consider using memory profiling to optimize usage
+# =============================================================================
 apiVersion: apps/v1
 kind: Deployment
 metadata:

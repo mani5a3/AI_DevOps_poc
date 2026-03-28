@@ -1,4 +1,21 @@
+# =============================================================================
 # Issue: NodeSelectorMismatch - Pod cannot be scheduled due to node selector
+# =============================================================================
+# Description:
+#   Pod has node selectors that don't match any node labels. The cluster
+#   has no nodes with the required labels.
+#
+# Symptoms:
+#   - Pod status: Pending
+#   - Events: "0/xx nodes are available", "node(s) didn't match node selector"
+#
+# Resolution:
+#   1. Add labels to matching nodes: kubectl label nodes <node> <label>=<value>
+#   2. Remove unnecessary node selectors from the pod spec
+#   3. Use node affinity for more flexible matching
+#   4. Check existing node labels: kubectl get nodes --show-labels
+#   5. Create new nodes with required labels if needed
+# =============================================================================
 apiVersion: v1
 kind: Pod
 metadata:

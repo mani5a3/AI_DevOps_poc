@@ -1,4 +1,21 @@
+# =============================================================================
 # Issue: CrashLoopBackOff - Container crashes immediately
+# =============================================================================
+# Description:
+#   Container terminates and restarts in a loop. This usually happens due to
+#   missing environment variables, invalid commands, or application errors.
+#
+# Symptoms:
+#   - Pod status: CrashLoopBackOff
+#   - Events: "Container terminated with exit code 1", "Back-off restarting"
+#
+# Resolution:
+#   1. Check container logs: kubectl logs <pod-name>
+#   2. Review the command and args in the container spec
+#   3. Ensure all required environment variables are set
+#   4. Verify the application can start successfully
+#   5. Check for missing dependencies or configuration files
+# =============================================================================
 apiVersion: apps/v1
 kind: Deployment
 metadata:

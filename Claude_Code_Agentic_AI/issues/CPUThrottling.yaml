@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: CPUThrottling - CPU throttling due to limits
+# =============================================================================
+# Description:
+#   Container is being throttled due to CPU limits being too low compared to
+#   requests, causing performance degradation.
+#
+# Symptoms:
+#   - Container CPU throttled in metrics
+#   - Application responds slowly
+#   - Events: "CPU throttled"
+#
+# Resolution:
+#   1. Increase CPU limits to match or exceed requests
+#   2. Analyze CPU usage patterns
+#   3. Set appropriate CPU requests and limits
+#   4. Consider using higher CPU limits for burst workloads
+#   5. Profile application to optimize CPU usage
+# =============================================================================
 apiVersion: v1
 kind: Pod
 metadata:

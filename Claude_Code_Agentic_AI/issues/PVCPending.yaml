@@ -1,4 +1,21 @@
+# =============================================================================
 # Issue: PVCPending - PVC stuck in pending
+# =============================================================================
+# Description:
+#   PersistentVolumeClaim cannot be bound to a PersistentVolume due to
+#   insufficient storage or non-existent storage class.
+#
+# Symptoms:
+#   - PVC status: Pending
+#   - Events: "no persistent volumes available", "storageclass not found"
+#
+# Resolution:
+#   1. Check if the storage class exists: kubectl get storageclass
+#   2. Request a reasonable storage size
+#   3. Configure a default storage class
+#   4. Create persistent volumes that match the claim requirements
+#   5. Check cloud provider storage availability
+# =============================================================================
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

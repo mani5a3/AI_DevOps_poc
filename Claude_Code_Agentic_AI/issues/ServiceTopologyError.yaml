@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: ServiceTopologyError - Service topology misconfiguration
+# =============================================================================
+# Description:
+#   Service topology configuration is invalid or cannot be fulfilled. The
+#   topologyKeys may reference unavailable node labels.
+#
+# Symptoms:
+#   - Service doesn't route traffic as expected
+#   - Events show topology warnings
+#   - Traffic fails to reach backend pods
+#
+# Resolution:
+#   1. Verify topologyKeys values are valid
+#   2. Ensure referenced labels exist on nodes
+#   3. Check service topology feature is enabled
+#   4. Use valid topology keys like "kubernetes.io/hostname"
+#   5. Review service topology documentation
+# =============================================================================
 apiVersion: v1
 kind: Service
 metadata:

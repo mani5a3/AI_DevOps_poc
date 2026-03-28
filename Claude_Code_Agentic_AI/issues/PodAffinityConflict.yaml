@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: PodAffinityConflict - Pod affinity/anti-affinity conflict
+# =============================================================================
+# Description:
+#   Pod cannot be scheduled due to affinity/anti-affinity rules that cannot
+#   be satisfied with current cluster state.
+#
+# Symptoms:
+#   - Pod status: Pending
+#   - Events: "0/xx nodes are available", "pod affinity/anti-affinity"
+#   - Affinity requirements cannot be met
+#
+# Resolution:
+#   1. Review pod affinity/anti-affinity rules
+#   2. Ensure sufficient nodes exist for the topology key
+#   3. Add more nodes or adjust labels
+#   4. Use soft preferences instead of hard requirements
+#   5. Simplify or remove conflicting affinity rules
+# =============================================================================
 apiVersion: v1
 kind: Pod
 metadata:

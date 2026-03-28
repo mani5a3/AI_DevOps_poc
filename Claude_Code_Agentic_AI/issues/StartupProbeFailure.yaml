@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: StartupProbeFailure - Startup probe check failing
+# =============================================================================
+# Description:
+#   Startup probe fails, indicating the application failed to start within
+#   the expected time. This blocks liveness and readiness checks.
+#
+# Symptoms:
+#   - Pod status shows startup probe failure
+#   - Container never reaches Ready state
+#   - Events: "Startup probe failed"
+#
+# Resolution:
+#   1. Review startup probe configuration
+#   2. Increase failureThreshold or periodSeconds
+#   3. Check why the application takes long to start
+#   4. Review application startup logs
+#   5. Ensure the startup endpoint returns 200 when ready
+# =============================================================================
 apiVersion: v1
 kind: Pod
 metadata:

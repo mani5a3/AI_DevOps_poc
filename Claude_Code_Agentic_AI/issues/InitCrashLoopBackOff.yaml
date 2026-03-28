@@ -1,4 +1,21 @@
+# =============================================================================
 # Issue: InitCrashLoopBackOff - Init container crashes
+# =============================================================================
+# Description:
+#   Init container terminates and enters crash loop. Init containers run
+#   before the main container, and failure prevents the pod from starting.
+#
+# Symptoms:
+#   - Pod status: InitCrashLoopBackOff
+#   - Init container shows restart count > 0
+#
+# Resolution:
+#   1. Check init container logs: kubectl logs <pod-name> -c <init-container>
+#   2. Verify the init container command is correct
+#   3. Ensure required environment variables are set
+#   4. Check for missing dependencies
+#   5. Review and fix the initialization logic
+# =============================================================================
 apiVersion: apps/v1
 kind: Deployment
 metadata:

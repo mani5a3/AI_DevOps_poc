@@ -1,4 +1,21 @@
+# =============================================================================
 # Issue: ImagePullBackOff - Invalid/missing container image
+# =============================================================================
+# Description:
+#   Kubernetes cannot pull the container image from the registry. The image tag
+#   may be invalid, the registry may be unreachable, or the image may not exist.
+#
+# Symptoms:
+#   - Pod status: ImagePullBackOff
+#   - Events: "Failed to pull image", "Back-off pulling image"
+#
+# Resolution:
+#   1. Verify the image name and tag are correct
+#   2. Check if the image exists in the registry
+#   3. Ensure the registry is accessible from the node
+#   4. If using private registry, configure imagePullSecrets
+#   5. Try using a known-valid image tag (e.g., nginx:1.25)
+# =============================================================================
 apiVersion: apps/v1
 kind: Deployment
 metadata:

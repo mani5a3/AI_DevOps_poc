@@ -1,4 +1,22 @@
+# =============================================================================
 # Issue: HorizontalPodAutoscalerNotWorking - HPA not scaling pods
+# =============================================================================
+# Description:
+#   HPA cannot scale the target deployment due to issues like missing metrics,
+#   unreachable API server, or incorrect configuration.
+#
+# Symptoms:
+#   - HPA shows desired=current but no scaling happens
+#   - Events: "failed to get metrics", "could not scale"
+#   - Target deployment replicas don't change
+#
+# Resolution:
+#   1. Verify metrics-server is running: kubectl get pods -n kube-system
+#   2. Check HPA status: kubectl describe hpa <name>
+#   3. Ensure target deployment has proper labels
+#   4. Verify scale target reference is correct
+#   5. Check RBAC permissions for HPA
+# =============================================================================
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
