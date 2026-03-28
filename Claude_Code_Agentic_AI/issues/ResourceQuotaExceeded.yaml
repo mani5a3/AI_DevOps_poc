@@ -1,0 +1,20 @@
+# Issue: ResourceQuotaExceeded - Exceeded resource quota
+apiVersion: v1
+kind: Pod
+metadata:
+  name: quota-exceeded-pod
+  labels:
+    app: quota-exceed
+spec:
+  containers:
+  - name: app
+    image: nginx:1.25
+    ports:
+    - containerPort: 80
+    resources:
+      requests:
+        memory: "64Gi"
+        cpu: "32"
+      limits:
+        memory: "128Gi"
+        cpu: "64"

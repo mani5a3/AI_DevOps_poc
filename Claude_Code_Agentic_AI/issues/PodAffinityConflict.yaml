@@ -1,0 +1,20 @@
+# Issue: PodAffinityConflict - Pod affinity/anti-affinity conflict
+apiVersion: v1
+kind: Pod
+metadata:
+  name: affinity-conflict-pod
+  labels:
+    app: affinity-issue
+spec:
+  containers:
+  - name: app
+    image: nginx:1.25
+    ports:
+    - containerPort: 80
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            app: webapp
+        topologyKey: kubernetes.io/hostname

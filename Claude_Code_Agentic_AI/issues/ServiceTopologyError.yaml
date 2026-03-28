@@ -1,0 +1,16 @@
+# Issue: ServiceTopologyError - Service topology misconfiguration
+apiVersion: v1
+kind: Service
+metadata:
+  name: topology-error
+  labels:
+    app: topology-issue
+spec:
+  selector:
+    app: backend
+  ports:
+  - port: 80
+    targetPort: 8080
+  topologyKeys:
+  - "kubernetes.io/hostname"
+  - "*"

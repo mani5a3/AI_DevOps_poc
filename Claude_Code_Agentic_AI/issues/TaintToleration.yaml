@@ -1,0 +1,18 @@
+# Issue: TaintToleration - Pod cannot tolerate node taints
+apiVersion: v1
+kind: Pod
+metadata:
+  name: taint-intolerant-pod
+  labels:
+    app: taint-issue
+spec:
+  containers:
+  - name: app
+    image: nginx:1.25
+    ports:
+    - containerPort: 80
+  tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "gpu"
+    effect: "NoSchedule"
