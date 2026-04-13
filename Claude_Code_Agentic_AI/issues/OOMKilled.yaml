@@ -1,0 +1,28 @@
+# Issue: OOMKilled - Container killed due to out of memory
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oom-killed
+  labels:
+    app: oom-killed
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oom-killed
+  template:
+    metadata:
+      labels:
+        app: oom-killed
+    spec:
+      containers:
+      - name: app
+        image: python:3.11-slim
+        command: ["python", "-c", "import sys; data = [x*2 for x in range(100000000)]; print(sum(data))"]
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "32Mi"
+            cpu: "100m"

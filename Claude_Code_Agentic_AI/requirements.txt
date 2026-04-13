@@ -1,0 +1,4 @@
+kubernetes>=28.0.0
+pyyaml>=6.0
+python-dateutil>=2.8.2
+ollama>=0.1.0

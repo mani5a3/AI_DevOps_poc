@@ -1,0 +1,20 @@
+# Issue: StartupProbeFailure - Startup probe check failing
+apiVersion: v1
+kind: Pod
+metadata:
+  name: startup-fail-pod
+  labels:
+    app: startup-fail
+spec:
+  containers:
+  - name: app
+    image: nginx:1.25
+    ports:
+    - containerPort: 80
+    startupProbe:
+      httpGet:
+        path: /startup
+        port: 80
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      failureThreshold: 30

@@ -1,0 +1,24 @@
+# Issue: CrashLoopBackOff - Container crashes immediately
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crash-loop
+  labels:
+    app: crash-loop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crash-loop
+  template:
+    metadata:
+      labels:
+        app: crash-loop
+    spec:
+      containers:
+      - name: app
+        image: busybox
+        command: ["/bin/sh", "-c", "echo $MISSING_VAR && exit 1"]
+        env:
+        - name: MISSING_VAR
+          value: ""

@@ -1,0 +1,19 @@
+# Issue: IngressError - Ingress with invalid configuration
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-error
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: invalid..host.com  # Invalid host
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: non-existent-service
+            port:
+              number: 9999

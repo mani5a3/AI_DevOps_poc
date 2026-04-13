@@ -1,0 +1,22 @@
+# Issue: ErrImagePull - Image pull error (similar to ImagePullBackOff but immediate)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: err-image-pull
+  labels:
+    app: err-image-pull
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: err-image-pull
+  template:
+    metadata:
+      labels:
+        app: err-image-pull
+    spec:
+      containers:
+      - name: app
+        image: registry.invalid.abc:9999/myapp:v1
+        ports:
+        - containerPort: 8080

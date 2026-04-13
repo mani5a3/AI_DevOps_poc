@@ -1,0 +1,23 @@
+# Issue: RBACForbiddenError - Pod with forbidden permissions
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rbac-forbidden
+  labels:
+    app: rbac-forbidden
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rbac-forbidden
+  template:
+    metadata:
+      labels:
+        app: rbac-forbidden
+    spec:
+      serviceAccountName: limited-sa
+      containers:
+      - name: app
+        image: bitnami/kubectl:latest
+        command: ["sh", "-c", "kubectl get pods --all-namespaces && sleep 3600"]
+        # This will fail due to RBAC - service account has limited permissions

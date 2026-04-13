@@ -1,0 +1,16 @@
+# Issue: NodeSelectorMismatch - Pod cannot be scheduled due to node selector
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nodeselector-mismatch
+  labels:
+    app: nodeselector-issue
+spec:
+  nodeSelector:
+    disk-type: ssd
+    region: us-west-1
+  containers:
+  - name: app
+    image: nginx:1.25
+    ports:
+    - containerPort: 80

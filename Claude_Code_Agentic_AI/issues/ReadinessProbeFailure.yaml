@@ -1,0 +1,19 @@
+# Issue: ReadinessProbeFailure - Readiness probe check failing
+apiVersion: v1
+kind: Pod
+metadata:
+  name: readiness-fail-pod
+  labels:
+    app: readiness-fail
+spec:
+  containers:
+  - name: app
+    image: nginx:1.25
+    ports:
+    - containerPort: 80
+    readinessProbe:
+      tcpSocket:
+        port: 9090
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      failureThreshold: 3

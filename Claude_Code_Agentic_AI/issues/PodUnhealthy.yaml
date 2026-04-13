@@ -1,0 +1,19 @@
+# Issue: PodUnhealthy - Pod not in Ready state
+apiVersion: v1
+kind: Pod
+metadata:
+  name: unhealthy-pod
+  labels:
+    app: unhealthy-app
+spec:
+  containers:
+  - name: app
+    image: nginx:1.25
+    ports:
+    - containerPort: 80
+    readinessProbe:
+      httpGet:
+        path: /health
+        port: 80
+      initialDelaySeconds: 5
+      periodSeconds: 5

@@ -1,0 +1,26 @@
+# Issue: CreateContainerError - Container cannot be created
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: create-container-error
+  labels:
+    app: create-container-error
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: create-container-error
+  template:
+    metadata:
+      labels:
+        app: create-container-error
+    spec:
+      containers:
+      - name: app
+        image: nginx:latest
+        # Invalid security context
+        securityContext:
+          runAsUser: 1
+          capabilities:
+            add: ["INVALID_CAPABILITY"]  # Invalid capability
+          privileged: true  # May be denied by PSP

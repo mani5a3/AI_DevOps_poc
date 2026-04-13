@@ -1,0 +1,20 @@
+# Issue: LivenessProbeFailure - Liveness probe check failing
+apiVersion: v1
+kind: Pod
+metadata:
+  name: liveness-fail-pod
+  labels:
+    app: liveness-fail
+spec:
+  containers:
+  - name: app
+    image: nginx:1.25
+    ports:
+    - containerPort: 80
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      failureThreshold: 3

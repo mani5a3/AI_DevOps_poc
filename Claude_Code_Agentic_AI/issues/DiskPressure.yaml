@@ -1,0 +1,19 @@
+# Issue: DiskPressure - Node has disk pressure
+apiVersion: v1
+kind: Pod
+metadata:
+  name: disk-pressure-pod
+  labels:
+    app: disk-pressure
+spec:
+  containers:
+  - name: app
+    image: nginx:1.25
+    ports:
+    - containerPort: 80
+    volumeMounts:
+    - name: storage
+      mountPath: /data
+  volumes:
+  - name: storage
+    emptyDir: {}

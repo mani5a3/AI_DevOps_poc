@@ -1,0 +1,33 @@
+# Issue: ServiceNoEndpoints - Service has no endpoints
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-no-endpoints
+  labels:
+    app: service-no-endpoints
+spec:
+  selector:
+    app: nonexistent-app
+  ports:
+  - port: 80
+    targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nonexistent-app
+  labels:
+    app: nonexistent-app
+spec:
+  replicas: 0  # No replicas - service won't have endpoints
+  selector:
+    matchLabels:
+      app: nonexistent-app
+  template:
+    metadata:
+      labels:
+        app: nonexistent-app
+    spec:
+      containers:
+      - name: app
+        image: nginx:latest

@@ -1,0 +1,12 @@
+# Issue: PodDisruptionBudgetNotSatisfied - PDB blocking eviction
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pdb-strict
+  labels:
+    app: pdb-issue
+spec:
+  minAvailable: 3
+  selector:
+    matchLabels:
+      app: critical-service

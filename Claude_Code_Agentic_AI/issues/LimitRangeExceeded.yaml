@@ -1,0 +1,16 @@
+# Issue: LimitRangeExceeded - Pod exceeds LimitRange constraints
+apiVersion: v1
+kind: Pod
+metadata:
+  name: limitrange-exceeded
+  labels:
+    app: limitrange-issue
+spec:
+  containers:
+  - name: app
+    image: nginx:1.25
+    ports:
+    - containerPort: 80
+    resources:
+      limits:
+        memory: "512Mi"

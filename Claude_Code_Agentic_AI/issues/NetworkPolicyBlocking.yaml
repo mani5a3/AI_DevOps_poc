@@ -1,0 +1,35 @@
+# Issue: NetworkPolicyBlocking - Network policy blocks traffic
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: network-policy-app
+  labels:
+    app: network-policy-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: network-policy-app
+  template:
+    metadata:
+      labels:
+        app: network-policy-app
+    spec:
+      containers:
+      - name: app
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+spec:
+  podSelector:
+    matchLabels:
+      app: network-policy-app
+  policyTypes:
+  - Ingress
+  - Egress
+  # Empty ingress/egress blocks all traffic

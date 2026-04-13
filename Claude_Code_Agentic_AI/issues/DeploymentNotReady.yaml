@@ -1,0 +1,23 @@
+# Issue: DeploymentNotReady - Deployment has unavailable replicas
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-not-ready
+  labels:
+    app: deployment-not-ready
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: deployment-not-ready
+  template:
+    metadata:
+      labels:
+        app: deployment-not-ready
+    spec:
+      containers:
+      - name: app
+        image: busybox
+        command: ["/bin/sh", "-c", "sleep 3600"]
+        # This will fail due to invalid image
+        image: invalid-image-xyz:99999
